@@ -1,0 +1,3 @@
+`define size 19
+`define depth 64
+`define add_width $clog2(`depth)
