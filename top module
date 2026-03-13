@@ -1,0 +1,100 @@
+
+module top(    
+ input clk,
+ input valid,
+ input reset_pc,
+ input reset_regmem,
+ input reset_instmem,
+ input reset_datamem,
+ input wrtrd_en_inst,
+ input wrtrd_en_reg,
+  input [`size-1:0]data_regmem1,
+  input [`size-1:0]data_regmem2,
+ input[`size-1:0]data_instmem
+);
+  wire ready;
+  wire ready1;
+  wire alu_b;
+  wire [`size-1:0] out_wrt;
+  wire[`size-1:0] out_reg1,out_reg2,out_inst,out_data,out_sign,out_imm,out_alu;
+  wire [`add_width-1:0]addr_inst,addr_inst_out,addr_1;
+  wire sel_imm,sel_pc,sel_wrt,signext_en,imm,wrtrd_en_data,wrt_en;
+  pc aa(.clk(clk),.reset(reset_pc),.addr(addr_inst_out),.addr_out(addr_inst));
+  inst_mem aa1(.wrtrd_en(wrtrd_en_inst),
+               .valid(valid),
+               .clk(clk),
+               .reset(reset_instmem),
+               .add(addr_inst),
+               .data(data_instmem),
+               .out(out_inst),
+               .ready(ready));
+  
+  pc_mux aa2(.in1(addr_1)
+             ,.in2(out_sign)
+             ,.sel(sel_pc)
+             ,.out(addr_inst_out));
+  
+  pc_adder aa3(.addr(addr_inst),
+               .addr_out(addr_1));
+  sign_ext aa4(
+    .imm(out_inst[18:14]),
+    .en(signext_en),
+    .out(out_sign)
+);
+  mux_imm aa5(
+    .sel(sel_imm),
+    .in1(out_reg2),
+    .in2(out_sign),
+    .out(out_imm)
+);
+  cu aa6(
+    .in(out_inst[3:0]),
+    .alu_b(alu_b),
+    .wrtrd_en_data(wrtrd_en_data),
+    .imm(imm),
+    .sel_imm(sel_imm),
+    .sel_wrt(sel_wrt),
+    .sel_pc_mux(sel_pc),
+    .signext_en(signext_en),
+    .wrt_en(wrt_en)
+);
+  reg_mem aa7(
+    .wrtrd_en(wrtrd_en_reg),
+    .wrt_en(wrt_en),
+    .valid(valid),
+    .clk(clk),
+    .reset(reset_regmem),
+    .add(out_inst[8:4]),
+    .add1(out_inst[13:9]),
+    .add2(out_inst[18:14]),
+    .data(data_regmem1),
+    .data1(data_regmem2),
+    .data2(out_wrt),
+    .imm(imm),
+    .out1(out_reg1),
+    .out(out_reg2),
+    .ready(ready1)
+);
+   alu aa8(
+     .in(out_reg1),
+     .in1(out_imm),
+     .s(out_inst[3:0]),
+     .out(out_alu),
+     .branch(alu_b)
+);
+  data_mem aa9(
+    .wrtrd_en(wrtrd_en_data),
+    .clk(clk),
+    .reset(reset_datamem),
+    .add(out_inst[18:14]),
+    .data(out_reg2),
+    .out(out_data)
+);
+  mux_wrt aa10(
+    .sel(sel_wrt),
+    .in1(out_alu),
+    .in2(out_data),
+    .out(out_wrt)
+);
+  
+endmodule
