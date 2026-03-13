@@ -1,0 +1,25 @@
+`define size 19
+`define depth 64
+`define add_width $clog2(`depth)
+
+module pc(
+  input  clk,
+  input  reset,
+  input  [`add_width-1:0] addr,
+  output reg [`add_width-1:0] addr_out
+);
+  always@(posedge clk) begin
+    if (reset) 
+      addr_out <='0;
+    else  
+      addr_out <= addr;
+  end
+endmodule
+
+module pc_adder(
+  input [`add_width-1:0]addr,
+  output [`add_width-1:0]addr_out
+);
+  assign addr_out = addr+1;
+endmodule
+
