@@ -1,0 +1,22 @@
+module cu(
+  input[3:0]in,
+  input alu_b,
+  output reg wrtrd_en_data,
+  output reg imm, 
+  output reg sel_imm,
+  output reg sel_wrt,
+  output reg sel_pc_mux,
+  output reg signext_en,
+  output reg wrt_en
+);
+  always@(*)begin
+    casez(in)
+      4'b0???:begin sel_imm=0;sel_pc_mux=alu_b;signext_en=0;sel_wrt=0;imm=0;wrtrd_en_data=0;wrt_en=1;end
+      4'b10??:begin sel_imm=1;sel_pc_mux=alu_b;signext_en=1;sel_wrt=0;imm=1;wrtrd_en_data=0;wrt_en=1;end
+      4'b110?:begin sel_imm=0;sel_pc_mux=alu_b;signext_en=0;sel_wrt=0;imm=0;wrtrd_en_data=0;wrt_en=1;end
+      4'b1110:begin sel_imm=0;sel_pc_mux=alu_b;signext_en=0;sel_wrt=1;imm=0;wrtrd_en_data=0;wrt_en=1;end
+      4'b1111:begin sel_imm=0;sel_pc_mux=alu_b;signext_en=0;sel_wrt=0;imm=0;wrtrd_en_data=1;wrt_en=0;end
+    endcase
+    $display("imm=%d;sel_pc_mux=%d;signext_en=%d;",imm,sel_pc_mux,signext_en);
+  end
+endmodule
